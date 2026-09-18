@@ -75,6 +75,20 @@ bool initialize(void* module) noexcept {
         || !open(filename, schema, defaults, settingsSchema, settingsDefaults)) {
         return false;
     }
+
+    // Experimental Red War bootstrap: expose a genuinely empty character roster to the client.
+    // This intentionally clears any locally persisted characters every time this test build boots.
+    // Account-wide state is left intact so we can observe the native no-character flow in isolation.
+    if (!execute(
+            "DELETE FROM sockets;"
+            "DELETE FROM items;"
+            "DELETE FROM character_stacks;"
+            "DELETE FROM pending_rewards;"
+            "DELETE FROM characters;"
+            "DELETE FROM unlocks WHERE character_slot >= 0;"
+            "UPDATE account SET profile_setup_completed=0 WHERE id=1;")) {
+        return false;
+    }
     return true;
 }
 
